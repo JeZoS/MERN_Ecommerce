@@ -93,4 +93,66 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
-export { authUser, getUser, registerUser, updateUserProfile };
+//get all users get api/users for admin
+const getUsers = asyncHandler(async (req, res) => {
+  //console.log("hit");
+  const users = await User.find();
+  res.json(users);
+});
+
+//delete a user api/users/:id
+const deleteUser = asyncHandler(async (req, res) => {
+  //console.log("hit");
+  const user = await User.findById(req.params.id);
+  if (user) {
+    await user.remove();
+    res.json({ message: "User Removed" });
+  } else {
+    res.status(404);
+    throw new Error("User Not Found");
+  }
+});
+
+//get single user from admin GET /api/users/:id
+const getUserById = asyncHandler(async (req, res) => {
+  //console.log("hit");
+  const user = await User.findById(req.params.id).select("-password");
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404);
+    throw new Error("User Not Found");
+  }
+});
+
+//update any user PUT /api/users/:id
+const updateUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (user) {
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.isAdmin = req.body.isAdmin;
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+    });
+  } else {
+    res.status(404);
+    throw new Error("User Not Found");
+  }
+});
+
+export {
+  authUser,
+  getUser,
+  registerUser,
+  updateUserProfile,
+  getUsers,
+  deleteUser,
+  getUserById,
+  updateUser,
+};
